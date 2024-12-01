@@ -7,6 +7,7 @@ from PyQt6.QtGui import QFont, QLinearGradient, QPalette, QColor, QBrush
 import re
 from database import Database
 from user import User  # Import the User class
+import bcrypt  # Import bcrypt for password hashing
 
 class SplitWindow(QMainWindow):
     def __init__(self):
@@ -106,6 +107,7 @@ class SplitWindow(QMainWindow):
         self.register_widget = QWidget()
         layout = QVBoxLayout(self.register_widget)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
 
         # Title
         title = QLabel("Register")
@@ -209,7 +211,7 @@ class SplitWindow(QMainWindow):
             return
 
         user = User(username, email, password)  # Create a User instance
-        if self.db.add_user(user):  # Assuming add_user method accepts a User object
+        if self.db.add_user(username, email, password):  # Assuming add_user method accepts a User object
             QMessageBox.information(self, "Success", "Registration Successful!")
             self.switch_to_login()
         else:
@@ -224,10 +226,10 @@ class SplitWindow(QMainWindow):
                 font-size: 16px;
                 padding: 10px;
                 border: 2px solid #4caf50;
- border-radius: 10px;
+                border-radius: 10px;
             }
             QLineEdit:focus {
-                border-color: #2196f3;
+ border-color: #2196f3;
             }
         """
 
@@ -263,3 +265,8 @@ class SplitWindow(QMainWindow):
         self.left_panel.deleteLater()
         self.left_panel = self.create_login_panel()
         self.main_layout.addWidget(self.left_panel)
+
+    def closeEvent(self, event):
+        """Close the database connection when the application exits."""
+        self.db.connection.close()
+        event.accept()

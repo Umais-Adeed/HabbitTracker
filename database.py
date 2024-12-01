@@ -1,5 +1,5 @@
-# database.py
 import sqlite3
+import bcrypt  # Import bcrypt for password hashing
 
 class Database:
     def __init__(self, db_name="users.db"):
@@ -20,11 +20,12 @@ class Database:
             )
 
     def add_user(self, username, email, password):
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         try:
             with self.connection:
                 self.connection.execute(
                     "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
-                    (username, email, password),
+                    (username, email, hashed_password),
                 )
             return True
         except sqlite3.IntegrityError:
@@ -33,7 +34,10 @@ class Database:
     def validate_user(self, username, password):
         cursor = self.connection.cursor()
         cursor.execute(
-            "SELECT * FROM users WHERE username = ? AND password = ?",
-            (username, password),
+            "SELECT password FROM users WHERE username = ?",
+            (username,),
         )
-        return cursor.fetchone() is not None
+        row = cursor.fetchone()
+        if row and bcrypt.checkpw(password.encode('utf-8'), row[0]):
+            return True
+        return False
