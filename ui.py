@@ -9,6 +9,8 @@ from database import Database
 from user import User  # Import the User class
 import bcrypt  # Import bcrypt for password hashing
 
+from mainActivity import MainActivityWindow
+
 class SplitWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -184,6 +186,7 @@ class SplitWindow(QMainWindow):
 
         if self.db.validate_user(username, password):
             QMessageBox.information(self, "Login Successful", f"Welcome, {username}!")
+            self.open_main_activity(username)
         else:
             QMessageBox.warning(self, "Login Failed", "Invalid username or password.")
 
@@ -266,7 +269,15 @@ class SplitWindow(QMainWindow):
         self.left_panel = self.create_login_panel()
         self.main_layout.addWidget(self.left_panel)
 
+    def open_main_activity(self, username):
+        """Open the main activity window."""
+        self.main_activity_window = MainActivityWindow(username)
+        self.main_activity_window.show()
+        self.close()  # Close the login window
+
+
     def closeEvent(self, event):
         """Close the database connection when the application exits."""
         self.db.connection.close()
         event.accept()
+
