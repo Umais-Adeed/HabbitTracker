@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (
-    QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit,
+    QMainWindow, QVBoxLayout, QWidget, QLabel,
     QPushButton, QMessageBox, QProgressBar, QListWidget
 )
 from PyQt6.QtCore import Qt
@@ -35,7 +35,7 @@ class MainActivityWindow(QMainWindow):
 
         # Habit Progress Bar
         self.progress_bar = QProgressBar()
-        self.progress_bar.setValue(40)  # Placeholder progress value
+        self.progress_bar.setValue(1)  # Placeholder progress value
         self.progress_bar.setFormat("Daily Progress: %p%")
         layout.addWidget(self.progress_bar)
 
@@ -56,6 +56,7 @@ class MainActivityWindow(QMainWindow):
 
     def handle_habit_tracking(self):
         QMessageBox.information(self, "Habit Tracker", "Habit marked as done! Update progress logic here.")
+
 
     def get_motivational_quote(self):
         quotes = [
