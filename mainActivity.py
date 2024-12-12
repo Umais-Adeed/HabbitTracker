@@ -1,15 +1,28 @@
+from sys import exception
+
 from PyQt6.QtWidgets import (
     QMainWindow, QVBoxLayout, QWidget, QLabel,
     QPushButton, QMessageBox, QProgressBar, QListWidget
 )
 from PyQt6.QtCore import Qt
+from datetime import date, timedelta
 from PyQt6.QtGui import QFont
 import random
+from database import Database
 
 
 class MainActivityWindow(QMainWindow):
-    def __init__(self, username):
+    def __init__(self, username, db, habit_id, frequency):
         super().__init__()
+        try:
+            self.db = Database()
+        except Exception as e:
+            QMessageBox.critical(self, "Database Error", f"Failed to initialize database: {str(e)}")
+            self.close()
+            return
+        self.habit_id = habit_id
+
+
         self.setWindowTitle("Habit Tracker - Main Activity")
         self.setGeometry(100, 100, 800, 600)
 
@@ -54,9 +67,27 @@ class MainActivityWindow(QMainWindow):
         habit_button.clicked.connect(self.handle_habit_tracking)
         layout.addWidget(habit_button)
 
-    def handle_habit_tracking(self):
-        QMessageBox.information(self, "Habit Tracker", "Habit marked as done! Update progress logic here.")
+    def mark_habit_complete(self):
+        today = date.today().isoformat()
+        if self.db.mark_habit(self.habit_id, today):
+            QMessageBox.information(self, "Success","Habit Marked")
+            self.update_progress()
+        else:
+            QMessageBox.warning(self, "Error", "Failed To Mark Habit")
 
+    def get_target_frequency(self,frequency):
+        if frequency == "daily":
+            return 1
+        elif frequency == "weekly":
+            return 7
+        elif frequency == "monthly":
+            return 30
+        return 1
+    def update_progress(self):
+        completions = self.db.get_habit_completions(self.habit_id, self.habit_frequency)
+        target = self.get_frequency_target(self.frequency)
+        progress = min((completions/target) *100, 100) if target > 0 else 0
+        self.progress_bar.setValue(int(progress))
 
     def get_motivational_quote(self):
         quotes = [

@@ -1,4 +1,6 @@
 import sqlite3
+from datetime import timedelta, date
+
 import bcrypt  # Import bcrypt for password hashing
 
 class Database:
@@ -23,7 +25,7 @@ class Database:
             self.connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS habit (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     user_id INTEGER NOT NULL,
                     habit_name TEXT NOT NULL,
                     habit_category TEXT NOT NULL,
@@ -70,3 +72,30 @@ class Database:
         rows = cursor.fetchall()
 
         habits = [{"habit_name":row[0], "habit_category": rows[1], "habit_frequency": rows[2]} for row in rows]
+
+    def mark_habit(self, habit_id, completion_date):
+        try:
+            with self.connection:
+                self.connection.execute(
+                    "INSERT INTO habit_progress (habit_id, completion_date) VALUES (?, ?)",
+                    (habit_id, completion_date),
+                )
+                return True
+        except sqlite3.IntegrityError:
+            return False
+    def get_completed_habits(self, habit_id, frequency):
+        cursor = self.connection.cursor()
+        today = date.today()
+        if frequency == 'daily':
+            cutoff = today.isoformat()
+        elif frequency == 'weekly':
+            cutoff = (today - timedelta(days=today.weekday())).isoformat()
+        elif frequency == 'monthly':
+            cutoff = today.replace(day=1).isoformat()
+        else:
+            return 0
+        cursor.execute(
+            "SELECT COUNT(*) FROM habit_progress WHERE habit_id = ? AND date_completed >= ?",
+            (habit_id, cutoff),
+        )
+        return cursor.fetchone()[0]

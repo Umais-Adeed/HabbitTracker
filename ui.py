@@ -282,7 +282,7 @@ class SplitWindow(QMainWindow):
     def handle_add_habit(self):
         habit_name = self.habit_name_input.text()
         habit_category = self.habit_category_input.text()
-        habit_frequency = self.habit_frequency_input.text()
+        habit_frequency = self.habit_frequency_input.currentText()
 
         if not habit_name or not habit_category or not habit_frequency:
             QMessageBox.warning(self, "Error", "All fields are required.")
@@ -323,10 +323,10 @@ class SplitWindow(QMainWindow):
         layout.addWidget(self.habit_name_input)
 
         # Habit Category Input
-        self.cat_input = QLineEdit()
-        self.cat_input.setPlaceholderText("Email")
-        self.cat_input.setStyleSheet(self.get_input_style())
-        layout.addWidget(self.cat_input)
+        self.habit_category_input = QLineEdit()
+        self.habit_category_input.setPlaceholderText("Email")
+        self.habit_category_input.setStyleSheet(self.get_input_style())
+        layout.addWidget(self.habit_category_input)
 
         # Habit Frequency Input
         self.habit_frequency_input = QComboBox()
