@@ -1,5 +1,8 @@
 import sqlite3
 import bcrypt  # Import bcrypt for password hashing
+from Demos.win32ts_logoff_disconnected import username
+from werkzeug.security import gen_salt
+
 
 class Database:
     def __init__(self, db_name="users.db"):
@@ -41,3 +44,6 @@ class Database:
         if row and bcrypt.checkpw(password.encode('utf-8'), row[0]):
             return True
         return False
+
+
+

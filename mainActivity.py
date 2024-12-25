@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit,
-    QPushButton, QMessageBox, QProgressBar, QListWidget
+    QPushButton, QMessageBox, QProgressBar, QListWidget, QHBoxLayout
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -35,7 +35,7 @@ class MainActivityWindow(QMainWindow):
 
         # Habit Progress Bar
         self.progress_bar = QProgressBar()
-        self.progress_bar.setValue(40)  # Placeholder progress value
+        self.progress_bar.setValue(0)  # Initial progress value
         self.progress_bar.setFormat("Daily Progress: %p%")
         layout.addWidget(self.progress_bar)
 
@@ -48,14 +48,53 @@ class MainActivityWindow(QMainWindow):
         self.habit_list.addItems(["Drink Water", "Exercise", "Read a Book", "Meditate"])  # Static habit list
         layout.addWidget(self.habit_list)
 
+        # Add Habit Input and Button
+        add_habit_layout = QHBoxLayout()
+        self.add_habit_input = QLineEdit()
+        self.add_habit_input.setPlaceholderText("Enter a new habit")
+        add_habit_button = QPushButton("Add Habit")
+        add_habit_button.clicked.connect(self.add_habit)
+        add_habit_layout.addWidget(self.add_habit_input)
+        add_habit_layout.addWidget(add_habit_button)
+        layout.addLayout(add_habit_layout)
+
         # Example Habit Tracker Button
         habit_button = QPushButton("Mark Habit as Done")
         habit_button.setFont(QFont("Arial", 16))
         habit_button.clicked.connect(self.handle_habit_tracking)
         layout.addWidget(habit_button)
 
+        # Initialize tracked habits
+        self.completed_habits = 0
+        self.total_habits = self.habit_list.count()
+
+    def add_habit(self):
+        new_habit = self.add_habit_input.text().strip()
+        if new_habit:
+            self.habit_list.addItem(new_habit)
+            self.total_habits += 1
+            self.add_habit_input.clear()
+        else:
+            QMessageBox.warning(self, "Invalid Input", "Please enter a valid habit.")
+
     def handle_habit_tracking(self):
-        QMessageBox.information(self, "Habit Tracker", "Habit marked as done! Update progress logic here.")
+        selected_items = self.habit_list.selectedItems()
+        if not selected_items:
+            QMessageBox.warning(self, "No Selection", "Please select a habit to mark as done.")
+            return
+
+        for item in selected_items:
+            self.habit_list.takeItem(self.habit_list.row(item))
+            self.completed_habits += 1
+
+        # Update progress bar
+        progress = int((self.completed_habits / self.total_habits) * 100)
+        self.progress_bar.setValue(progress)
+
+        if self.completed_habits == self.total_habits:
+            QMessageBox.information(self, "Habit Tracker", "Congratulations! You've completed all your habits for today.")
+        else:
+            QMessageBox.information(self, "Habit Tracker", f"Habit marked as done! {self.total_habits - self.completed_habits} habits remaining.")
 
     def get_motivational_quote(self):
         quotes = [
